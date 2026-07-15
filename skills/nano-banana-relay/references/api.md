@@ -18,9 +18,9 @@ The bundled client reads `~/.codex/nano-banana-relay-auth.json` by default. Its 
 
 ```json
 {
-  "_instructions": "Keep this file in ~/.codex, set mode 600, and never commit it.",
-  "OPENAI_API_KEY": "YOUR_API_KEY",
-  "OPENAI_BASE_URL": "https://draw.hugusir.top/api/v1"
+  "_instructions": "Fill OPENAI_API_KEY and OPENAI_BASE_URL. Keep this file in ~/.codex, set mode 600, and never commit it.",
+  "OPENAI_API_KEY": "",
+  "OPENAI_BASE_URL": ""
 }
 ```
 

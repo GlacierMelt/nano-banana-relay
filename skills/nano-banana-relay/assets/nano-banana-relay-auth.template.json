@@ -1,0 +1,5 @@
+{
+  "_instructions": "Fill OPENAI_API_KEY and OPENAI_BASE_URL before using the relay. Keep this file in ~/.codex, set mode 600, and never commit it.",
+  "OPENAI_API_KEY": "",
+  "OPENAI_BASE_URL": ""
+}

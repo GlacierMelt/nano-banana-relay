@@ -9,12 +9,12 @@ Use the bundled CLI for deterministic requests and result handling. Resolve path
 
 ## Setup
 
-1. Prefer the highest-priority local auth file at `~/.codex/nano-banana-relay-auth.json`:
+1. Prefer the highest-priority local auth file at `~/.codex/nano-banana-relay-auth.json`. When it is missing, copy `assets/nano-banana-relay-auth.template.json` from this skill without overwriting an existing file. The template keeps both values empty so each user can choose their own relay:
 
    ```json
    {
-     "OPENAI_API_KEY": "YOUR_API_KEY",
-     "OPENAI_BASE_URL": "https://draw.hugusir.top/api/v1"
+     "OPENAI_API_KEY": "",
+     "OPENAI_BASE_URL": ""
    }
    ```
 
@@ -26,7 +26,7 @@ Use the bundled CLI for deterministic requests and result handling. Resolve path
 
 3. Resolve settings in this order: auth file, command-line argument, environment variable, built-in default. Non-empty auth-file values override `--api-key`, `--base-url`, `NANO_BANANA_API_KEY`, and `NANO_BANANA_BASE_URL`.
 
-4. Use `NANO_BANANA_AUTH_FILE` or global `--auth-file` only when a different auth-file path is required. Never write, print, commit, or embed the API key in generated files.
+4. Fill `OPENAI_API_KEY` and `OPENAI_BASE_URL` before use when the built-in fallback URL is not desired. Use `NANO_BANANA_AUTH_FILE` or global `--auth-file` only when a different auth-file path is required. Never write, print, commit, or embed the API key in generated files.
 
 ## Choose A Workflow
 

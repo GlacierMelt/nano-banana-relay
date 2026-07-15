@@ -13,13 +13,19 @@ It supports:
 
 ## Install In Codex
 
-Ask Codex:
+Ask Codex with automatic auth setup enabled by default:
 
 ```text
-Use $skill-installer to install https://github.com/GlacierMelt/nano-banana-relay/tree/main/skills/nano-banana-relay
+Use $skill-installer to install https://github.com/GlacierMelt/nano-banana-relay/tree/main/skills/nano-banana-relay with post-install auth template setup: unless --no-auth is present, automatically copy the installed assets/nano-banana-relay-auth.template.json to ~/.codex/nano-banana-relay-auth.json only when the destination does not exist, set the file mode to 600, do not ask for an API key or Base URL, do not overwrite an existing auth file, and verify only the file path, permissions, and field names without displaying credential values.
 ```
 
-The skill becomes available on the next turn as `$nano-banana-relay`.
+To install without creating or changing an auth file, use:
+
+```text
+Use $skill-installer to install https://github.com/GlacierMelt/nano-banana-relay/tree/main/skills/nano-banana-relay and skip post-install auth setup --no-auth
+```
+
+`--no-auth` is a prompt convention for Codex, not a native option of `install-skill-from-github.py`. The skill becomes available on the next turn as `$nano-banana-relay`.
 
 Alternatively, run the bundled installer directly:
 
@@ -35,13 +41,13 @@ Create the highest-priority local auth file:
 
 ```json
 {
-  "_instructions": "Keep this file in ~/.codex, mode 600, and never commit it.",
-  "OPENAI_API_KEY": "YOUR_API_KEY",
-  "OPENAI_BASE_URL": "https://draw.hugusir.top/api/v1"
+  "_instructions": "Fill OPENAI_API_KEY and OPENAI_BASE_URL. Keep this file in ~/.codex, mode 600, and never commit it.",
+  "OPENAI_API_KEY": "",
+  "OPENAI_BASE_URL": ""
 }
 ```
 
-Save it as `~/.codex/nano-banana-relay-auth.json`, then restrict its permissions:
+The default installation prompt copies this template to `~/.codex/nano-banana-relay-auth.json` unless `--no-auth` is present. Fill the values later, then keep its permissions restricted:
 
 ```bash
 chmod 600 ~/.codex/nano-banana-relay-auth.json
