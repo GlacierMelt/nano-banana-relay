@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nano Banana Relay"
+  short_description: "用 Nano Banana 中转 API 生成与编辑图片"
+  default_prompt: "使用 $nano-banana-relay 根据我的提示词生成图片并保存到本地。"
