@@ -12,6 +12,20 @@
 
 Authenticate with `Authorization: Bearer YOUR_API_KEY`. The service also documents `X-Api-Key` and `X-Access-Key`, but the bundled client uses Bearer authentication.
 
+## Local Auth File
+
+The bundled client reads `~/.codex/nano-banana-relay-auth.json` by default. Its non-empty values have the highest priority over command-line arguments and environment variables.
+
+```json
+{
+  "_instructions": "Keep this file in ~/.codex, set mode 600, and never commit it.",
+  "OPENAI_API_KEY": "YOUR_API_KEY",
+  "OPENAI_BASE_URL": "https://draw.hugusir.top/api/v1"
+}
+```
+
+Accepted aliases include `NANO_BANANA_API_KEY`, `NANO_BANANA_BASE_URL`, and optional `NANO_BANANA_ASYNC_BASE_URL`. Select another file with `NANO_BANANA_AUTH_FILE` or global `--auth-file`.
+
 ## Models
 
 Always treat `GET /models` as authoritative. Models observed during skill creation included:

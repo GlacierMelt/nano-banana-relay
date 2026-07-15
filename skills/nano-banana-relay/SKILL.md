@@ -9,19 +9,24 @@ Use the bundled CLI for deterministic requests and result handling. Resolve path
 
 ## Setup
 
-1. Set the API key only in the current process environment:
+1. Prefer the highest-priority local auth file at `~/.codex/nano-banana-relay-auth.json`:
 
-   ```bash
-   export NANO_BANANA_API_KEY="YOUR_API_KEY"
+   ```json
+   {
+     "OPENAI_API_KEY": "YOUR_API_KEY",
+     "OPENAI_BASE_URL": "https://draw.hugusir.top/api/v1"
+   }
    ```
 
-2. Keep the default endpoint unless the user provides another compatible relay:
+2. Restrict the auth file to the current user:
 
    ```bash
-   export NANO_BANANA_BASE_URL="https://draw.hugusir.top/api/v1"
+   chmod 600 ~/.codex/nano-banana-relay-auth.json
    ```
 
-3. Never write, print, commit, or embed the API key in generated files. Prefer a process-scoped environment variable when the user supplies a key in chat.
+3. Resolve settings in this order: auth file, command-line argument, environment variable, built-in default. Non-empty auth-file values override `--api-key`, `--base-url`, `NANO_BANANA_API_KEY`, and `NANO_BANANA_BASE_URL`.
+
+4. Use `NANO_BANANA_AUTH_FILE` or global `--auth-file` only when a different auth-file path is required. Never write, print, commit, or embed the API key in generated files.
 
 ## Choose A Workflow
 

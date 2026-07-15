@@ -1,6 +1,7 @@
 .DS_Store
 .env
 .env.*
+*-auth.json
 __pycache__/
 *.py[cod]
 outputs/

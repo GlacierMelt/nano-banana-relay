@@ -9,6 +9,7 @@ import binascii
 import json
 import mimetypes
 import os
+import stat
 import sys
 import time
 import uuid
@@ -21,6 +22,7 @@ from urllib.request import Request, urlopen
 
 
 DEFAULT_BASE_URL = "https://draw.hugusir.top/api/v1"
+DEFAULT_AUTH_FILE = Path.home() / ".codex" / "nano-banana-relay-auth.json"
 DEFAULT_MODEL = "Nano Banana2"
 SUCCESS_STATES = {"success", "succeeded", "completed", "complete", "done"}
 FAILURE_STATES = {"failed", "failure", "error", "cancelled", "canceled"}
@@ -55,10 +57,45 @@ def sanitize_for_output(value: Any) -> Any:
     return sanitized
 
 
-def get_api_key(cli_value: str | None) -> str:
-    key = cli_value or os.environ.get("NANO_BANANA_API_KEY", "")
+def auth_value(auth: dict[str, Any], *keys: str) -> str | None:
+    for key in keys:
+        value = auth.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None
+
+
+def load_auth_file(path_value: str | None) -> dict[str, Any]:
+    if not path_value:
+        return {}
+    path = Path(path_value).expanduser().resolve()
+    if not path.exists():
+        return {}
+    if not path.is_file():
+        raise ApiError(f"Auth path is not a file: {path}")
+    if os.name == "posix":
+        mode = stat.S_IMODE(path.stat().st_mode)
+        if mode & 0o077:
+            raise ApiError(f"Auth file permissions are too open ({mode:04o}); run: chmod 600 {path}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ApiError(f"Cannot read auth file {path}: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise ApiError(f"Auth file must contain one JSON object: {path}")
+    return payload
+
+
+def get_api_key(auth: dict[str, Any], cli_value: str | None) -> str:
+    key = (
+        auth_value(auth, "NANO_BANANA_API_KEY", "OPENAI_API_KEY", "api_key")
+        or cli_value
+        or os.environ.get("NANO_BANANA_API_KEY", "")
+    )
     if not key:
-        raise ApiError("Missing API key. Set NANO_BANANA_API_KEY in the current process environment.")
+        raise ApiError(
+            "Missing API key. Fill ~/.codex/nano-banana-relay-auth.json or set NANO_BANANA_API_KEY."
+        )
     return key
 
 
@@ -75,7 +112,20 @@ def get_origin(base_url: str) -> str:
     return f"{parsed.scheme}://{parsed.netloc}"
 
 
-def get_async_base_url(base_url: str, configured: str | None) -> str:
+def get_base_url(auth: dict[str, Any], configured: str | None) -> str:
+    value = (
+        auth_value(auth, "NANO_BANANA_BASE_URL", "OPENAI_BASE_URL", "base_url")
+        or configured
+        or os.environ.get("NANO_BANANA_BASE_URL")
+        or DEFAULT_BASE_URL
+    )
+    return normalize_base_url(value)
+
+
+def get_async_base_url(base_url: str, auth: dict[str, Any], configured: str | None) -> str:
+    auth_configured = auth_value(auth, "NANO_BANANA_ASYNC_BASE_URL", "async_base_url")
+    if auth_configured:
+        return normalize_base_url(auth_configured)
     if configured:
         return normalize_base_url(configured)
     env_value = os.environ.get("NANO_BANANA_ASYNC_BASE_URL")
@@ -473,12 +523,17 @@ def add_output_arguments(parser: argparse.ArgumentParser) -> None:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--api-key", help="Prefer NANO_BANANA_API_KEY to avoid shell history exposure.")
+    parser.add_argument(
+        "--auth-file",
+        default=os.environ.get("NANO_BANANA_AUTH_FILE", str(DEFAULT_AUTH_FILE)),
+        help="Highest-priority auth JSON file.",
+    )
+    parser.add_argument("--api-key", help="Overridden by a non-empty key in the auth file.")
     parser.add_argument(
         "--base-url",
-        default=os.environ.get("NANO_BANANA_BASE_URL", DEFAULT_BASE_URL),
+        help="Overridden by a non-empty base URL in the auth file.",
     )
-    parser.add_argument("--async-base-url")
+    parser.add_argument("--async-base-url", help="Overridden by a non-empty async URL in the auth file.")
     parser.add_argument("--request-timeout", type=float, default=600.0)
     parser.add_argument(
         "--include-base64",
@@ -652,9 +707,10 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
     try:
-        api_key = get_api_key(args.api_key)
-        base_url = normalize_base_url(args.base_url)
-        async_base_url = get_async_base_url(base_url, args.async_base_url)
+        auth = load_auth_file(args.auth_file)
+        api_key = get_api_key(auth, args.api_key)
+        base_url = get_base_url(auth, args.base_url)
+        async_base_url = get_async_base_url(base_url, auth, args.async_base_url)
 
         if args.command == "models":
             result = command_models(args, api_key, base_url)

@@ -31,18 +31,31 @@ python "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-installer/scripts/insta
 
 ## Configure
 
-Store the relay API key in an environment variable. Never commit it to source control:
+Create the highest-priority local auth file:
+
+```json
+{
+  "_instructions": "Keep this file in ~/.codex, mode 600, and never commit it.",
+  "OPENAI_API_KEY": "YOUR_API_KEY",
+  "OPENAI_BASE_URL": "https://draw.hugusir.top/api/v1"
+}
+```
+
+Save it as `~/.codex/nano-banana-relay-auth.json`, then restrict its permissions:
+
+```bash
+chmod 600 ~/.codex/nano-banana-relay-auth.json
+```
+
+Non-empty auth-file values override command-line arguments and environment variables. When the file is absent or a field is empty, these environment variables remain available as fallbacks:
 
 ```bash
 export NANO_BANANA_API_KEY="YOUR_API_KEY"
-```
-
-Optional defaults:
-
-```bash
 export NANO_BANANA_BASE_URL="https://draw.hugusir.top/api/v1"
 export NANO_BANANA_MODEL="Nano Banana2"
 ```
+
+Select a different auth file with `NANO_BANANA_AUTH_FILE` or the global `--auth-file` CLI option.
 
 ## Use In Codex
 
@@ -76,7 +89,7 @@ $nano-banana-relay model="Nano Banana Pro" size=16:9 prompt="未来城市夜景"
 - The documented asynchronous endpoint covers text-to-image. Image editing is synchronous.
 - Generated URLs are temporary and should be downloaded promptly.
 - Generation requests may consume paid relay credits.
-- This repository contains no API key. Use environment variables or another secret manager.
+- This repository contains no API key. Never commit `nano-banana-relay-auth.json`.
 
 ## License
 
